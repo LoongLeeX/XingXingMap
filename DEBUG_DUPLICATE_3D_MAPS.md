@@ -3,6 +3,42 @@
 ## 🎯 问题描述
 在分屏模式下，右侧 3D 区域出现两个 3D 地图（上下各一个）
 
+**问题原因**：React Strict Mode 在开发环境下会导致组件挂载两次，导致同一个容器内添加了两个 `gmp-map-3d` 实例。
+
+## ✅ 已实施的修复
+
+### 修复 1：防止重复添加
+在创建地图前检查容器是否已有地图实例：
+```typescript
+const existingMaps = containerRef.current.querySelectorAll('gmp-map-3d');
+if (existingMaps.length > 0) {
+  console.warn('容器已有地图实例，跳过创建');
+  return;
+}
+```
+
+### 修复 2：使用 isMounted 标志
+防止异步操作在组件卸载后继续执行：
+```typescript
+let isMounted = true;
+
+// 在关键操作前检查
+if (!isMounted) return;
+
+// 清理时设置
+return () => {
+  isMounted = false;
+  // ...
+};
+```
+
+### 修复 3：强制清理残留实例
+在清理函数中移除所有可能残留的地图：
+```typescript
+const remainingMaps = containerRef.current.querySelectorAll('gmp-map-3d');
+remainingMaps.forEach(map => map.remove());
+```
+
 ## 🆔 已添加的调试功能
 
 ### 1. 组件 ID 系统
