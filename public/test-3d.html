@@ -1,31 +1,177 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Test 3D Map - Google Official Example</title>
+    <title>Test 3D Map with Markers</title>
     <style>
       html, body {
         height: 100%;
         margin: 0;
         padding: 0;
       }
+      #map-container {
+        width: 100%;
+        height: 100%;
+      }
       gmp-map-3d {
         width: 100%;
         height: 100%;
       }
+      #info {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: white;
+        padding: 10px;
+        border-radius: 5px;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        font-family: Arial, sans-serif;
+        z-index: 1000;
+      }
     </style>
   </head>
   <body>
-    <!-- 官方示例：直接使用 gmp-map-3d Web Component -->
-    <gmp-map-3d 
-      mode="hybrid" 
-      center="37.841157, -122.551679" 
-      range="2000" 
-      tilt="75" 
-      heading="330">
-    </gmp-map-3d>
+    <div id="info">
+      <h3>3D 地图 + 标记测试</h3>
+      <p>🗺️ 旧金山金门大桥</p>
+      <p>📍 多个 3D 标记</p>
+    </div>
+    <div id="map-container"></div>
     
     <!-- 加载 Maps JavaScript API，注意 v=alpha 和 libraries=maps3d -->
-    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBfyQNsQWu3HdhfOxcZnL7YkKOI-RJI_D0&v=alpha&libraries=maps3d"></script>
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBfyQNsQWu3HdhfOxcZnL7YkKOI-RJI_D0&v=alpha&libraries=maps3d&callback=init"></script>
+    
+    <script>
+      async function init() {
+        console.log('🚀 初始化 3D 地图...');
+        
+        try {
+          // 检查 Google Maps API 是否加载
+          if (!window.google || !window.google.maps) {
+            throw new Error('Google Maps API 未加载');
+          }
+          console.log('✅ Google Maps API 已加载');
+          
+          if (!window.google.maps.importLibrary) {
+            throw new Error('importLibrary 方法不可用');
+          }
+          console.log('✅ importLibrary 方法可用');
+          
+          // 导入 maps3d 库
+          console.log('📦 正在导入 maps3d 库...');
+          const maps3dLib = await google.maps.importLibrary("maps3d");
+          console.log('✅ maps3d 库导入结果:', maps3dLib);
+          
+          // 检查是否有 Map3DElement 和 Marker3DElement
+          if (!maps3dLib.Map3DElement) {
+            throw new Error('Map3DElement 不可用，请检查 API Key 和 Map Tiles API 是否启用');
+          }
+          if (!maps3dLib.Marker3DElement) {
+            throw new Error('Marker3DElement 不可用');
+          }
+          
+          const { Map3DElement, Marker3DElement } = maps3dLib;
+          console.log('✅ Map3DElement 和 Marker3DElement 已获取');
+          
+          // 创建 3D 地图
+          const map = new Map3DElement({
+            center: { 
+              lat: 37.8199, 
+              lng: -122.4783, 
+              altitude: 0 
+            },
+            tilt: 67.5,
+            range: 1500,
+            heading: 330,
+            mode: 'SATELLITE'  // 可选: SATELLITE, HYBRID, UNLIT
+          });
+          console.log('✅ 3D 地图创建成功');
+          
+          // 创建多个标记
+          
+          // 标记 1: 金门大桥北端
+          const marker1 = new Marker3DElement({
+            position: { 
+              lat: 37.8199, 
+              lng: -122.4783, 
+              altitude: 100 
+            },
+            altitudeMode: "ABSOLUTE",
+            extruded: true,
+            label: "🌉 金门大桥北端"
+          });
+          console.log('✅ 标记 1 创建成功');
+          
+          // 标记 2: 金门大桥南端
+          const marker2 = new Marker3DElement({
+            position: { 
+              lat: 37.8089, 
+              lng: -122.4755, 
+              altitude: 80 
+            },
+            altitudeMode: "ABSOLUTE",
+            extruded: true,
+            label: "🌉 金门大桥南端"
+          });
+          console.log('✅ 标记 2 创建成功');
+          
+          // 标记 3: 更高的标记
+          const marker3 = new Marker3DElement({
+            position: { 
+              lat: 37.8144, 
+              lng: -122.4769, 
+              altitude: 200 
+            },
+            altitudeMode: "ABSOLUTE",
+            extruded: true,
+            label: "📍 高处观景点"
+          });
+          console.log('✅ 标记 3 创建成功');
+          
+          // 标记 4: 地面标记（CLAMP_TO_GROUND）
+          const marker4 = new Marker3DElement({
+            position: { 
+              lat: 37.8250, 
+              lng: -122.4800, 
+              altitude: 0 
+            },
+            altitudeMode: "CLAMP_TO_GROUND",
+            extruded: false,
+            label: "🏖️ 地面点"
+          });
+          console.log('✅ 标记 4 创建成功');
+          
+          // 将所有标记添加到地图
+          map.append(marker1);
+          map.append(marker2);
+          map.append(marker3);
+          map.append(marker4);
+          console.log('✅ 所有标记已添加到地图');
+          
+          // 将地图添加到页面
+          document.getElementById('map-container').appendChild(map);
+          console.log('✅ 地图已添加到页面');
+          
+          console.log('🎉 3D 地图和标记初始化完成！');
+          
+          // 可选：添加地图交互监听
+          map.addEventListener('gmp-click', (event) => {
+            console.log('🖱️ 地图被点击:', event);
+          });
+          
+        } catch (error) {
+          console.error('❌ 初始化失败:', error);
+          document.getElementById('info').innerHTML = `
+            <h3>❌ 加载失败</h3>
+            <p>${error.message}</p>
+          `;
+        }
+      }
+      
+      // 如果脚本不是 async 加载，手动调用
+      if (typeof google !== 'undefined') {
+        init();
+      }
+    </script>
   </body>
 </html>
 
