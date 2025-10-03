@@ -42,7 +42,8 @@ export const DEFAULT_MAP_CONTROLS = {
   mapTypeControl: true,
   scaleControl: true,
   streetViewControl: false,
-  rotateControl: true,
+  // 禁用旋转控件 - 保持 2D 俯视模式
+  rotateControl: false,
   fullscreenControl: true,
 };
 
