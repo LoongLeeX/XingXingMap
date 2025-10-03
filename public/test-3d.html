@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Test 3D Map - Google Official Example</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      gmp-map-3d {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 官方示例：直接使用 gmp-map-3d Web Component -->
+    <gmp-map-3d 
+      mode="hybrid" 
+      center="37.841157, -122.551679" 
+      range="2000" 
+      tilt="75" 
+      heading="330">
+    </gmp-map-3d>
+    
+    <!-- 加载 Maps JavaScript API，注意 v=alpha 和 libraries=maps3d -->
+    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBfyQNsQWu3HdhfOxcZnL7YkKOI-RJI_D0&v=alpha&libraries=maps3d"></script>
+  </body>
+</html>
+

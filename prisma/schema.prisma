@@ -1,0 +1,51 @@
+// Prisma Schema - SQLite Configuration
+// 可轻松切换到其他数据库 (PostgreSQL, MySQL, etc.)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// 标记表
+model Marker {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  latitude    Float
+  longitude   Float
+  images      String   @default("")  // SQLite 不支持数组，使用 JSON 字符串存储
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([latitude, longitude])
+  @@map("markers")
+}
+
+// 未来可能需要的表
+
+// 用户表 (如果需要认证)
+// model User {
+//   id        String   @id @default(cuid())
+//   email     String   @unique
+//   name      String?
+//   password  String
+//   markers   Marker[] @relation("UserMarkers")
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   @@map("users")
+// }
+
+// 标记分类表 (未来扩展)
+// model Category {
+//   id        String   @id @default(cuid())
+//   name      String   @unique
+//   color     String?
+//   markers   Marker[] @relation("CategoryMarkers")
+//   createdAt DateTime @default(now())
+//   @@map("categories")
+// }
+
