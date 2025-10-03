@@ -29,9 +29,17 @@ export function Map3DWithMarkers({
   const [map3d, setMap3d] = useState<any>(null);
   const [isReady, setIsReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showInteractionTip, setShowInteractionTip] = useState(true);
   
   // 生成唯一的组件ID用于调试
   const componentId = useRef(`map3d-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+  
+  // 鼠标交互状态
+  const mouseStateRef = useRef({
+    isMouseDown: false,
+    lastMouseX: 0,
+    currentHeading: 0
+  });
   
   console.log(`🆔 [Map3DWithMarkers] 组件渲染 - ID: ${componentId.current}`);
 
@@ -41,6 +49,7 @@ export function Map3DWithMarkers({
     
     let map3dInstance: any = null;
     let isMounted = true;
+    let cleanupInteraction: (() => void) | null = null;
 
     async function init3DMap() {
       try {
@@ -125,6 +134,89 @@ export function Map3DWithMarkers({
           });
         }
 
+        // 添加鼠标拖拽旋转交互
+        console.log('🖱️ [Map3DWithMarkers] 添加鼠标交互控制');
+        
+        // 初始化当前heading
+        mouseStateRef.current.currentHeading = map3dInstance.heading || 0;
+        
+        // 鼠标按下事件
+        const handleMouseDown = (event: MouseEvent) => {
+          mouseStateRef.current.isMouseDown = true;
+          mouseStateRef.current.lastMouseX = event.clientX;
+          map3dInstance.style.cursor = 'grabbing';
+        };
+        
+        // 鼠标移动事件 - 控制heading旋转
+        const handleMouseMove = (event: MouseEvent) => {
+          if (!mouseStateRef.current.isMouseDown) return;
+          
+          // 计算鼠标水平移动的距离
+          const deltaX = event.clientX - mouseStateRef.current.lastMouseX;
+          mouseStateRef.current.lastMouseX = event.clientX;
+          
+          // 根据鼠标移动更新heading
+          // 鼠标向右移动，heading减少（逆时针旋转视角）
+          // 灵敏度：0.3度/像素
+          mouseStateRef.current.currentHeading -= deltaX * 0.3;
+          
+          // 保持heading在0-360度范围内
+          mouseStateRef.current.currentHeading = 
+            (mouseStateRef.current.currentHeading + 360) % 360;
+          
+          // 更新相机视角
+          map3dInstance.heading = mouseStateRef.current.currentHeading;
+        };
+        
+        // 鼠标松开事件
+        const handleMouseUp = () => {
+          mouseStateRef.current.isMouseDown = false;
+          map3dInstance.style.cursor = 'grab';
+        };
+        
+        // 鼠标离开地图区域时停止拖拽
+        const handleMouseLeave = () => {
+          mouseStateRef.current.isMouseDown = false;
+          map3dInstance.style.cursor = 'grab';
+        };
+        
+        // 键盘方向键控制
+        const handleKeyDown = (event: KeyboardEvent) => {
+          const rotateSpeed = 5; // 每次旋转5度
+          
+          if (event.key === 'ArrowLeft') {
+            mouseStateRef.current.currentHeading = 
+              (mouseStateRef.current.currentHeading - rotateSpeed + 360) % 360;
+            map3dInstance.heading = mouseStateRef.current.currentHeading;
+          } else if (event.key === 'ArrowRight') {
+            mouseStateRef.current.currentHeading = 
+              (mouseStateRef.current.currentHeading + rotateSpeed) % 360;
+            map3dInstance.heading = mouseStateRef.current.currentHeading;
+          }
+        };
+        
+        // 添加事件监听器
+        map3dInstance.addEventListener('mousedown', handleMouseDown);
+        map3dInstance.addEventListener('mousemove', handleMouseMove);
+        map3dInstance.addEventListener('mouseup', handleMouseUp);
+        map3dInstance.addEventListener('mouseleave', handleMouseLeave);
+        document.addEventListener('keydown', handleKeyDown);
+        
+        // 设置初始鼠标样式
+        map3dInstance.style.cursor = 'grab';
+        
+        console.log('✅ [Map3DWithMarkers] 鼠标交互控制已添加');
+        
+        // 保存事件监听器清理函数
+        cleanupInteraction = () => {
+          map3dInstance.removeEventListener('mousedown', handleMouseDown);
+          map3dInstance.removeEventListener('mousemove', handleMouseMove);
+          map3dInstance.removeEventListener('mouseup', handleMouseUp);
+          map3dInstance.removeEventListener('mouseleave', handleMouseLeave);
+          document.removeEventListener('keydown', handleKeyDown);
+          console.log('🧹 [Map3DWithMarkers] 鼠标交互监听器已清理');
+        };
+
         // 在添加到 DOM 前再次检查是否已卸载
         if (!isMounted) {
           console.log(`⚠️ [Map3DWithMarkers] 组件已卸载（添加前检查），取消添加 - ID: ${componentId.current}`);
@@ -175,6 +267,11 @@ export function Map3DWithMarkers({
     return () => {
       console.log(`🧹 [Map3DWithMarkers] 组件卸载，开始清理 - ID: ${componentId.current}`);
       isMounted = false; // 标记为已卸载，防止异步操作继续执行
+      
+      // 清理鼠标交互事件监听器
+      if (cleanupInteraction) {
+        cleanupInteraction();
+      }
       
       if (map3dInstance) {
         try {
@@ -297,15 +394,35 @@ export function Map3DWithMarkers({
       
       {/* 状态指示器（小巧版） - 包含组件ID用于调试 */}
       {isReady && (
-        <div 
-          className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-[10px] z-10"
-          title={`组件ID: ${componentId.current}`}
-        >
-          ✅ {markers.length}个标记
-          <div className="text-[8px] text-gray-400 mt-0.5">
-            ID: {componentId.current.slice(-8)}
+        <>
+          <div 
+            className="absolute bottom-2 right-2 bg-black/70 text-white px-2 py-1 rounded text-[10px] z-10"
+            title={`组件ID: ${componentId.current}`}
+          >
+            ✅ {markers.length}个标记
+            <div className="text-[8px] text-gray-400 mt-0.5">
+              ID: {componentId.current.slice(-8)}
+            </div>
           </div>
-        </div>
+          
+          {/* 交互提示 */}
+          {showInteractionTip && (
+            <div className="absolute top-16 right-2 bg-blue-600/90 text-white px-3 py-2 pr-6 rounded-lg text-xs z-10 max-w-xs shadow-lg">
+              <button
+                onClick={() => setShowInteractionTip(false)}
+                className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center hover:bg-white/20 rounded transition-colors text-sm"
+                title="关闭提示"
+              >
+                ✕
+              </button>
+              <div className="font-semibold mb-1">🖱️ 3D 交互控制</div>
+              <div className="text-[10px] space-y-0.5">
+                <div>• 拖拽鼠标：旋转视角</div>
+                <div>• ← → 方向键：旋转视角</div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
