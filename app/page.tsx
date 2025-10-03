@@ -178,29 +178,12 @@ export default function HomePage() {
           <p className="text-sm text-gray-600">💡 点击地图添加标记</p>
         </div>
         
-        <MapContainer onMapClick={handleMapClick} />
-        
-        {/* 标记图层 - 显示所有保存的标记 */}
-        <MarkersLayer
-          map={map2D}
+        <MapContainer 
+          onMapClick={handleMapClick}
           markers={markers}
+          searchMarkerPosition={searchMarkerPosition}
           onMarkerClick={handleMarkerClick}
         />
-        
-        {/* 搜索标记 - 临时显示搜索选中的位置 */}
-        {searchMarkerPosition && (
-          <CustomMarker
-            map={map2D}
-            position={searchMarkerPosition}
-            title="搜索位置"
-            icon="📌"
-            onClick={() => {
-              console.log('📌 [HomePage] 搜索标记被点击');
-              setSelectedPosition(searchMarkerPosition);
-              setIsMarkerFormOpen(true);
-            }}
-          />
-        )}
       </div>
       
       {/* 标记表单 Modal */}

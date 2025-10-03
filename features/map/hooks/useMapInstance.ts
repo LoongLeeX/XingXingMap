@@ -57,9 +57,14 @@ export function useMapInstance(containerId: string, config: Partial<MapConfig> =
         zoom: finalConfig.zoom,
         mapTypeId: finalConfig.mapType,
         ...DEFAULT_MAP_CONTROLS,
+        // 强制 2D 俯视视角 - 禁用倾斜和旋转
+        tilt: 0,  // 禁用倾斜（保持俯视）
+        heading: 0, // 禁用旋转（正北方向）
+        // 禁用 45° 影像功能
+        rotateControl: false,
       });
       
-      console.log('✅ [useMapInstance] 地图实例创建成功');
+      console.log('✅ [useMapInstance] 地图实例创建成功 - 强制 2D 模式');
       
       mapRef.current = mapInstance;
       setMap(mapInstance);
