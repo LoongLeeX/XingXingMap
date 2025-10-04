@@ -42,10 +42,10 @@ lerna-debug.log*
 next-env.d.ts
 
 # Prisma
-prisma/*.db
-prisma/*.db-journal
-dev.db
-dev.db-journal
+
+
+
+
 
 # Uploads
 public/uploads/*
