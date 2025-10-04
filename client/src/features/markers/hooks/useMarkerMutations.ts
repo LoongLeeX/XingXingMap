@@ -5,7 +5,7 @@
 'use client';
 
 import { useState } from 'react';
-import { CreateMarkerDTO, UpdateMarkerDTO } from '@/clientservershare/types/marker.types';
+import { CreateMarkerDTO, UpdateMarkerDTO } from '@/shared/types/marker.types';
 import {
   createMarkerAction,
   updateMarkerAction,

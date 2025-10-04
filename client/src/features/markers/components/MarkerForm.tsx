@@ -8,7 +8,7 @@ import React, { useState } from 'react';
 import { Input } from '@/components/ui/Input';
 import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/Button';
-import { CreateMarkerDTO } from '@/clientservershare/types/marker.types';
+import { CreateMarkerDTO } from '@/shared/types/marker.types';
 
 export interface MarkerFormProps {
   initialData?: Partial<CreateMarkerDTO>;

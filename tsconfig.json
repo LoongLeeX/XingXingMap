@@ -19,7 +19,7 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"],
+      "@/*": ["./client/src/*"],
       "@/client/*": ["./client/*"],
       "@/server/*": ["./server/*"],
       "@/shared/*": ["./clientservershare/*"]

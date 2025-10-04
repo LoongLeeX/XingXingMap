@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { useMapStore } from '../hooks/useMapStore';
-import { VIEW_MODES } from '@/clientservershare/constants/map.constants';
+import { VIEW_MODES } from '@/shared/constants/map.constants';
 import { cn } from '@/lib/utils';
 
 export function ViewModeToggle() {

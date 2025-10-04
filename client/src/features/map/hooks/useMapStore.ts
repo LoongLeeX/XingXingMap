@@ -5,8 +5,8 @@
 'use client';
 
 import { create } from 'zustand';
-import { MapType, ViewMode } from '@/clientservershare/types/map.types';
-import { DEFAULT_MAP_CONFIG } from '@/clientservershare/constants/map.constants';
+import { MapType, ViewMode } from '@/shared/types/map.types';
+import { DEFAULT_MAP_CONFIG } from '@/shared/constants/map.constants';
 
 interface MapState {
   // 地图状态

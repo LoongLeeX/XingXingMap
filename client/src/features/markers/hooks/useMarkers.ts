@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Marker } from '@/clientservershare/types/marker.types';
+import { Marker } from '@/shared/types/marker.types';
 import { getMarkersAction } from '@/server/src/features/markers/actions/marker-actions';
 
 export function useMarkers() {

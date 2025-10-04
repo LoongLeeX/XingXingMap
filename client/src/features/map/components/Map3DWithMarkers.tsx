@@ -7,7 +7,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useMapStore } from '../hooks/useMapStore';
-import { Marker } from '@/clientservershare/types/marker.types';
+import { Marker } from '@/shared/types/marker.types';
 import { Markers3DLayer } from '@/features/markers/components/Markers3DLayer';
 import { Marker3D } from '@/features/markers/components/Marker3D';
 

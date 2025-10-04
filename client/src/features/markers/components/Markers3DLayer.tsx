@@ -7,7 +7,7 @@
 'use client';
 
 import React from 'react';
-import { Marker } from '@/clientservershare/types/marker.types';
+import { Marker } from '@/shared/types/marker.types';
 import { Marker3D } from './Marker3D';
 
 export interface Markers3DLayerProps {

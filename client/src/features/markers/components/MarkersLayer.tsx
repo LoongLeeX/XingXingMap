@@ -6,7 +6,7 @@
 'use client';
 
 import React from 'react';
-import { Marker } from '@/clientservershare/types/marker.types';
+import { Marker } from '@/shared/types/marker.types';
 import { CustomMarker } from './CustomMarker';
 
 export interface MarkersLayerProps {

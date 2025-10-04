@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { useMapStore } from '../hooks/useMapStore';
-import { MAP_TYPES } from '@/clientservershare/constants/map.constants';
+import { MAP_TYPES } from '@/shared/constants/map.constants';
 import { cn } from '@/lib/utils';
 
 export function MapTypeToggle() {

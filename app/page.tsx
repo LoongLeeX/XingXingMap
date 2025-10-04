@@ -19,15 +19,15 @@ import { DiagnosticPanel } from '@/components/DiagnosticPanel';
 import { useMarkers } from '@/features/markers/hooks/useMarkers';
 import { useMarkerMutations } from '@/features/markers/hooks/useMarkerMutations';
 import { useMapStore } from '@/features/map/hooks/useMapStore';
-import { CreateMarkerDTO } from '@/clientservershare/types/marker.types';
-import { SUCCESS_MESSAGES } from '@/clientservershare/constants/app.constants';
+import { CreateMarkerDTO } from '@/shared/types/marker.types';
+import { SUCCESS_MESSAGES } from '@/shared/constants/app.constants';
 
 export default function HomePage() {
   console.log('🏠 [HomePage] 组件渲染');
   
   const { isLoaded, loadError } = useGoogleMaps();
   const { markers, isLoading: markersLoading, refetch } = useMarkers();
-  const { createMarker, deleteMarker } = useMarkerMutations();
+  const { createMarker, updateMarker, deleteMarker } = useMarkerMutations();
   const { updateMapView, map2D } = useMapStore();
   
   useEffect(() => {
@@ -36,6 +36,7 @@ export default function HomePage() {
   
   const [isMarkerFormOpen, setIsMarkerFormOpen] = useState(false);
   const [selectedPosition, setSelectedPosition] = useState<{ lat: number; lng: number } | null>(null);
+  const [editingMarker, setEditingMarker] = useState<any | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [searchMarkerPosition, setSearchMarkerPosition] = useState<{ lat: number; lng: number } | null>(null);
   
@@ -67,24 +68,42 @@ export default function HomePage() {
     }
   };
   
-  // 处理标记创建
+  // 处理标记编辑
+  const handleMarkerEdit = (marker: any) => {
+    console.log('✏️ [HomePage] 编辑标记:', marker.title);
+    setEditingMarker(marker);
+    setSelectedPosition({ lat: marker.latitude, lng: marker.longitude });
+    setIsMarkerFormOpen(true);
+  };
+  
+  // 处理标记创建或更新
   const handleMarkerSubmit = async (data: CreateMarkerDTO) => {
     try {
-      if (selectedPosition) {
+      if (editingMarker) {
+        // 更新现有标记
+        await updateMarker(editingMarker.id, {
+          title: data.title,
+          description: data.description,
+        });
+        alert(SUCCESS_MESSAGES.MARKER_UPDATED || '标记已更新');
+      } else if (selectedPosition) {
+        // 创建新标记
         await createMarker({
           ...data,
           latitude: selectedPosition.lat,
           longitude: selectedPosition.lng,
         });
-        
         alert(SUCCESS_MESSAGES.MARKER_CREATED);
-        setIsMarkerFormOpen(false);
-        setSelectedPosition(null);
-        setSearchMarkerPosition(null); // 清除搜索标记
-        refetch();
       }
+      
+      setIsMarkerFormOpen(false);
+      setSelectedPosition(null);
+      setEditingMarker(null);
+      setSearchMarkerPosition(null);
+      refetch();
     } catch (error) {
-      alert('创建标记失败: ' + (error instanceof Error ? error.message : '未知错误'));
+      const action = editingMarker ? '更新' : '创建';
+      alert(`${action}标记失败: ` + (error instanceof Error ? error.message : '未知错误'));
     }
   };
   
@@ -158,6 +177,7 @@ export default function HomePage() {
             markers={markers}
             isLoading={markersLoading}
             onMarkerClick={handleMarkerClick}
+            onMarkerEdit={handleMarkerEdit}
             onMarkerDelete={handleMarkerDelete}
           />
         </div>
@@ -192,15 +212,26 @@ export default function HomePage() {
         onClose={() => {
           setIsMarkerFormOpen(false);
           setSelectedPosition(null);
+          setEditingMarker(null);
         }}
-        title="添加新标记"
+        title={editingMarker ? "编辑标记" : "添加新标记"}
       >
         <MarkerForm
-          initialData={selectedPosition || undefined}
+          initialData={editingMarker ? {
+            title: editingMarker.title,
+            description: editingMarker.description,
+            latitude: editingMarker.latitude,
+            longitude: editingMarker.longitude,
+            images: editingMarker.images,
+          } : (selectedPosition ? {
+            latitude: selectedPosition.lat,
+            longitude: selectedPosition.lng,
+          } : undefined)}
           onSubmit={handleMarkerSubmit}
           onCancel={() => {
             setIsMarkerFormOpen(false);
             setSelectedPosition(null);
+            setEditingMarker(null);
           }}
         />
       </Modal>
