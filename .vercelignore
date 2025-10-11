@@ -1,0 +1,9 @@
+# 忽略本地 SQLite schema，Vercel 使用 schema.production.prisma
+prisma/schema.prisma
+prisma/dev.db
+prisma/dev.db-journal
+
+# 忽略本地开发文件
+.env.local
+.env*.local
+

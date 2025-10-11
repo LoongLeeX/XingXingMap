@@ -12,26 +12,36 @@
 
 ```
 Map/
-├── app/                          # Next.js App Router
-│   ├── page.tsx                 # ✅ 主页面
+├── app/                          # Next.js 路由层（薄层）
+│   ├── page.tsx                 # ✅ 主页面路由（导入 HomePage）
+│   ├── settings/page.tsx        # ✅ 设置页面路由（导入 SettingsPage）
 │   ├── layout.tsx               # ✅ 根布局
 │   └── globals.css              # ✅ 全局样式
 │
-├── features/                     # 功能模块（垂直切片）
-│   ├── map/                     # ✅ 地图功能
-│   │   ├── components/          # Map2D, Map3D, SplitView, Controls
-│   │   └── hooks/               # useGoogleMaps, useMapInstance, useMapStore
-│   ├── markers/                 # ✅ 标记功能
-│   │   ├── components/          # MarkerForm, MarkerList, MarkerCard
-│   │   └── hooks/               # useMarkers, useMarkerMutations
-│   └── search/                  # ✅ 搜索功能
-│       └── components/          # SearchBar
-│
-├── components/                   # ✅ 通用 UI 组件
-│   └── ui/                      # Button, Input, Modal, Card, Loading, Textarea
-│
-├── lib/                         # ✅ 客户端工具
-│   └── utils.ts
+├── client/                       # ✅ 客户端代码（完整业务逻辑）
+│   └── src/
+│       ├── pages/               # ✅ 页面级组件
+│       │   ├── HomePage.tsx     # 主页面实际内容
+│       │   └── SettingsPage.tsx # 设置页面实际内容
+│       │
+│       ├── features/            # ✅ 功能模块（垂直切片）
+│       │   ├── map/             # 地图功能
+│       │   │   ├── components/  # Map2D, Map3D, SplitView, Controls
+│       │   │   └── hooks/       # useGoogleMaps, useMapInstance, useMapStore
+│       │   ├── markers/         # 标记功能
+│       │   │   ├── components/  # MarkerForm, MarkerList, MarkerCard
+│       │   │   └── hooks/       # useMarkers, useMarkerMutations
+│       │   └── search/          # 搜索功能
+│       │       └── components/  # SearchBar
+│       │
+│       ├── components/          # ✅ 通用组件
+│       │   ├── ui/              # Button, Input, Modal, Card, Loading, Textarea
+│       │   └── ...              # API Key 管理等组件
+│       │
+│       └── lib/                 # ✅ 客户端工具
+│           ├── utils.ts
+│           ├── api-key-manager.ts
+│           └── stores/          # Zustand stores
 │
 ├── server/                      # ✅ 后端代码
 │   └── src/
@@ -128,7 +138,26 @@ Map/
 
 ## 🏗️ 架构亮点
 
-### 1. Repository Pattern
+### 1. 路由与业务逻辑分离（2024-10 更新）
+```
+/app/                           # 路由层（极简）
+  └── page.tsx                  # 仅导入和导出
+        ↓
+/client/src/pages/              # 业务逻辑层（完整实现）
+  └── HomePage.tsx              # 实际的页面内容
+        ↓
+/client/src/components/         # UI 组件
+        ↓
+/client/src/features/           # 功能模块
+```
+
+**优势**:
+- ✅ 关注点分离：路由 vs 业务逻辑
+- ✅ 可移植性：业务代码与框架解耦
+- ✅ 可测试性：页面组件可独立测试
+- ✅ 清晰性：职责明确，易于维护
+
+### 2. Repository Pattern
 ```
 Controller (Server Actions)
     ↓
@@ -147,13 +176,13 @@ Database (SQLite / 可切换)
 - ✅ 便于单元测试
 - ✅ 代码解耦
 
-### 2. Features 驱动开发
+### 3. Features 驱动开发
 - 按业务功能垂直切分
 - 每个 feature 包含完整的前后端代码
 - 高内聚低耦合
 - 易于维护和扩展
 
-### 3. 类型安全
+### 4. 类型安全
 - 全栈 TypeScript
 - Zod 运行时验证
 - Prisma 类型推导

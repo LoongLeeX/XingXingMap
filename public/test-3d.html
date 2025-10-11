@@ -27,20 +27,167 @@
         font-family: Arial, sans-serif;
         z-index: 1000;
       }
+      #api-key-input-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+      }
+      #api-key-form {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        max-width: 500px;
+        width: 90%;
+      }
+      #api-key-form h2 {
+        margin-top: 0;
+        color: #333;
+      }
+      #api-key-form input {
+        width: 100%;
+        padding: 10px;
+        margin: 10px 0;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 14px;
+        box-sizing: border-box;
+      }
+      #api-key-form button {
+        width: 100%;
+        padding: 12px;
+        background: #4285f4;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+      }
+      #api-key-form button:hover {
+        background: #357ae8;
+      }
+      #api-key-form .hint {
+        font-size: 12px;
+        color: #666;
+        margin: 5px 0;
+      }
+      #api-key-form .clear-btn {
+        background: #dc3545;
+        margin-top: 5px;
+      }
+      #api-key-form .clear-btn:hover {
+        background: #c82333;
+      }
+      .hidden {
+        display: none !important;
+      }
     </style>
   </head>
   <body>
+    <!-- API Key 输入界面 -->
+    <div id="api-key-input-container" class="hidden">
+      <div id="api-key-form">
+        <h2>🗺️ 输入 Google Maps API Key</h2>
+        <p class="hint">请输入您的 Google Maps API Key 以加载 3D 地图</p>
+        <input 
+          type="text" 
+          id="api-key-input" 
+          placeholder="AIzaSy..." 
+          autocomplete="off"
+        />
+        <button onclick="saveApiKey()">保存并加载地图</button>
+        <button class="clear-btn" onclick="clearApiKey()">清除缓存的 Key</button>
+      </div>
+    </div>
+    
     <div id="info">
       <h3>3D 地图 + 标记测试</h3>
       <p>🗺️ 旧金山金门大桥</p>
       <p>📍 多个 3D 标记</p>
     </div>
     <div id="map-container"></div>
-    
-    <!-- 加载 Maps JavaScript API，注意 v=alpha 和 libraries=maps3d -->
-    <script async src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBfyQNsQWu3HdhfOxcZnL7YkKOI-RJI_D0&v=alpha&libraries=maps3d&callback=init"></script>
-    
+
     <script>
+      const STORAGE_KEY = 'test_3d_map_key';
+      
+      // 从 localStorage 获取 API key
+      function getApiKey() {
+        return localStorage.getItem(STORAGE_KEY);
+      }
+      
+      // 保存 API key 到 localStorage
+      function saveApiKeyToStorage(apiKey) {
+        localStorage.setItem(STORAGE_KEY, apiKey);
+      }
+      
+      // 显示 API key 输入界面
+      function showApiKeyInput() {
+        const container = document.getElementById('api-key-input-container');
+        container.classList.remove('hidden');
+        const input = document.getElementById('api-key-input');
+        const existingKey = getApiKey();
+        if (existingKey) {
+          input.value = existingKey;
+        }
+        input.focus();
+      }
+      
+      // 隐藏 API key 输入界面
+      function hideApiKeyInput() {
+        document.getElementById('api-key-input-container').classList.add('hidden');
+      }
+      
+      // 保存 API key 并加载地图
+      function saveApiKey() {
+        const input = document.getElementById('api-key-input');
+        const apiKey = input.value.trim();
+        
+        if (!apiKey) {
+          alert('请输入有效的 API Key');
+          return;
+        }
+        
+        saveApiKeyToStorage(apiKey);
+        hideApiKeyInput();
+        loadGoogleMapsScript(apiKey);
+      }
+      
+      // 清除缓存的 API key
+      function clearApiKey() {
+        localStorage.removeItem(STORAGE_KEY);
+        document.getElementById('api-key-input').value = '';
+        alert('API Key 已清除，页面将刷新');
+        location.reload();
+      }
+      
+      // 动态加载 Google Maps 脚本
+      function loadGoogleMapsScript(apiKey) {
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&v=alpha&libraries=maps3d&callback=init`;
+        script.async = true;
+        script.defer = true;
+        script.onerror = () => {
+          console.error('❌ Google Maps 脚本加载失败');
+          document.getElementById('info').innerHTML = `
+            <h3>❌ 加载失败</h3>
+            <p>无法加载 Google Maps 脚本，请检查 API Key 是否正确</p>
+            <button onclick="showApiKeyInput()" style="margin-top: 10px; padding: 8px 16px; cursor: pointer;">
+              重新输入 API Key
+            </button>
+          `;
+        };
+        document.head.appendChild(script);
+      }
+      
+      // 初始化 3D 地图
       async function init() {
         console.log('🚀 初始化 3D 地图...');
         
@@ -163,14 +310,35 @@
           document.getElementById('info').innerHTML = `
             <h3>❌ 加载失败</h3>
             <p>${error.message}</p>
+            <button onclick="showApiKeyInput()" style="margin-top: 10px; padding: 8px 16px; cursor: pointer; background: #4285f4; color: white; border: none; border-radius: 5px;">
+              重新输入 API Key
+            </button>
           `;
         }
       }
       
-      // 如果脚本不是 async 加载，手动调用
-      if (typeof google !== 'undefined') {
-        init();
-      }
+      // 页面加载时检查是否有缓存的 API key
+      window.addEventListener('DOMContentLoaded', () => {
+        const apiKey = getApiKey();
+        
+        if (apiKey) {
+          console.log('✅ 找到缓存的 API Key');
+          loadGoogleMapsScript(apiKey);
+        } else {
+          console.log('❌ 未找到缓存的 API Key，显示输入界面');
+          showApiKeyInput();
+        }
+      });
+      
+      // 允许在输入框中按 Enter 键提交
+      document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('api-key-input');
+        input.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') {
+            saveApiKey();
+          }
+        });
+      });
     </script>
   </body>
 </html>

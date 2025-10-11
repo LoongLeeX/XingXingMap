@@ -18,7 +18,7 @@ export class PrismaMarkerRepository implements IMarkerRepository {
   constructor(private prisma: PrismaClient) {}
 
   /**
-   * 辅助方法：将图片数组序列化为字符串（SQLite 不支持数组类型）
+   * 辅助方法：将图片数组序列化为字符串（SQLite 使用）
    */
   private serializeImages(images?: string[]): string {
     if (!images || images.length === 0) return '';
@@ -38,27 +38,46 @@ export class PrismaMarkerRepository implements IMarkerRepository {
   }
 
   /**
-   * 辅助方法：转换 Marker 对象，处理 images 字段
+   * 检测是否使用 PostgreSQL
    */
-  private transformMarker(marker: Marker): Marker {
-    return {
-      ...marker,
-      images: this.serializeImages(this.deserializeImages(marker.images)),
-    };
+  private isPostgreSQL(): boolean {
+    const dbUrl = process.env.DATABASE_URL || '';
+    return dbUrl.startsWith('postgresql://') || dbUrl.startsWith('postgres://');
   }
 
   async create(data: CreateMarkerInput): Promise<Marker> {
+    const isPostgres = this.isPostgreSQL();
+    console.log('🔵 [PrismaRepository] 数据库类型:', isPostgres ? 'PostgreSQL' : 'SQLite');
+    console.log('🔵 [PrismaRepository] 创建数据:', data);
+    
     const marker = await this.prisma.marker.create({
       data: {
         title: data.title,
         description: data.description,
         latitude: data.latitude,
         longitude: data.longitude,
-        images: this.serializeImages(data.images),
+        images: isPostgres
+          ? (data.images || []) as any
+          : this.serializeImages(data.images) as any,
       },
     });
 
+    console.log('✅ [PrismaRepository] 标记已保存到数据库:', marker.id);
     return this.transformMarker(marker);
+  }
+
+  /**
+   * 转换 Marker，处理 images 字段
+   */
+  private transformMarker(marker: Marker): Marker {
+    if (this.isPostgreSQL()) {
+      return marker;
+    }
+    // SQLite: 反序列化 images
+    return {
+      ...marker,
+      images: this.deserializeImages(marker.images as any) as any,
+    };
   }
 
   async findAll(options?: FindManyOptions): Promise<Marker[]> {
@@ -69,31 +88,25 @@ export class PrismaMarkerRepository implements IMarkerRepository {
         ? { [options.orderBy.field]: options.orderBy.direction }
         : { createdAt: 'desc' },
     });
-
-    return markers.map(marker => this.transformMarker(marker));
+    return markers.map(m => this.transformMarker(m));
   }
 
   async findById(id: string): Promise<Marker | null> {
     const marker = await this.prisma.marker.findUnique({
       where: { id },
     });
-
     return marker ? this.transformMarker(marker) : null;
   }
 
   async update(id: string, data: UpdateMarkerInput): Promise<Marker> {
     const updateData: any = { ...data };
-    
-    // 如果有 images 字段，需要序列化
-    if (data.images !== undefined) {
+    if (data.images !== undefined && !this.isPostgreSQL()) {
       updateData.images = this.serializeImages(data.images);
     }
-
     const marker = await this.prisma.marker.update({
       where: { id },
       data: updateData,
     });
-
     return this.transformMarker(marker);
   }
 
@@ -116,8 +129,7 @@ export class PrismaMarkerRepository implements IMarkerRepository {
         },
       },
     });
-
-    return markers.map(marker => this.transformMarker(marker));
+    return markers.map(m => this.transformMarker(m));
   }
 
   async search(keyword: string): Promise<Marker[]> {
@@ -130,8 +142,7 @@ export class PrismaMarkerRepository implements IMarkerRepository {
       },
       orderBy: { createdAt: 'desc' },
     });
-
-    return markers.map(marker => this.transformMarker(marker));
+    return markers.map(m => this.transformMarker(m));
   }
 
   async count(): Promise<number> {

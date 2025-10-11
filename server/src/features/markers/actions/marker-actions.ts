@@ -22,7 +22,9 @@ const markerService = new MarkerService();
  */
 export async function createMarkerAction(data: CreateMarkerInput) {
   try {
+    console.log('🔵 [createMarkerAction] 开始创建标记:', data);
     const marker = await markerService.createMarker(data);
+    console.log('✅ [createMarkerAction] 标记创建成功:', marker);
     
     // 重新验证路径，刷新缓存
     revalidatePath('/');
@@ -32,7 +34,7 @@ export async function createMarkerAction(data: CreateMarkerInput) {
       data: marker,
     };
   } catch (error) {
-    console.error('Failed to create marker:', error);
+    console.error('❌ [createMarkerAction] 创建失败:', error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Failed to create marker',

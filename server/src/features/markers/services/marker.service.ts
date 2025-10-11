@@ -120,9 +120,13 @@ export class MarkerService {
     return {
       total: allMarkers.length,
       withImages: allMarkers.filter(m => {
+        // 支持数组或 JSON 字符串
+        if (Array.isArray(m.images)) {
+          return m.images.length > 0;
+        }
         try {
-          const images = JSON.parse(m.images);
-          return images.length > 0;
+          const images = JSON.parse(m.images as any);
+          return Array.isArray(images) && images.length > 0;
         } catch {
           return false;
         }

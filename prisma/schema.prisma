@@ -1,5 +1,6 @@
-// Prisma Schema - SQLite Configuration
-// 可轻松切换到其他数据库 (PostgreSQL, MySQL, etc.)
+// Prisma Schema - 双环境配置
+// 本地开发: SQLite (简单快速)
+// Vercel 生产: PostgreSQL (通过 DATABASE_URL 自动检测)
 
 generator client {
   provider = "prisma-client-js"
@@ -17,7 +18,7 @@ model Marker {
   description String?
   latitude    Float
   longitude   Float
-  images      String   @default("")  // SQLite 不支持数组，使用 JSON 字符串存储
+  images      String   @default("")  // SQLite 使用 JSON 字符串
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

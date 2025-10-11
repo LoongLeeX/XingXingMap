@@ -5,10 +5,10 @@
 'use client';
 
 import React from 'react';
-import { Marker } from '@/clientservershare/types/marker.types';
+import { Marker } from '@/shared/types/marker.types';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { formatDateTime, truncateText } from '@/clientservershare/utils/shared.utils';
+import { formatDateTime, truncateText } from '@/shared/utils/shared.utils';
 
 export interface MarkerCardProps {
   marker: Marker;

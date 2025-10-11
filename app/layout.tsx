@@ -1,6 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { ToastContainer } from '@/client/src/components/ui/Toast';
+import { Navigation } from '@/client/src/components/Navigation';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -17,14 +19,13 @@ export default function RootLayout({
   return (
     <html lang="zh-CN">
       <head>
-        {/* 加载 Google Maps API - 2D 地图使用 weekly 版本 */}
-        {/* 注意：3D 地图需要单独的 alpha 版本和 maps3d 库 */}
-        <script
-          async
-          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&v=alpha&libraries=maps3d,places`}
-        />
+        {/* Google Maps 脚本现在通过客户端组件动态加载 */}
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <Navigation />
+        {children}
+        <ToastContainer />
+      </body>
     </html>
   );
 }

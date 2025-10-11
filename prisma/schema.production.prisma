@@ -1,0 +1,27 @@
+// Prisma Schema - Vercel 生产环境（PostgreSQL）
+// 此文件仅用于 Vercel 部署
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_DATABASE_URL")
+}
+
+// 标记表
+model Marker {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  latitude    Float
+  longitude   Float
+  images      String[] @default([])  // PostgreSQL 数组类型
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([latitude, longitude])
+  @@map("markers")
+}

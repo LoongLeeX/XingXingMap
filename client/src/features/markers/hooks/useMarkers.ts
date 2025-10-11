@@ -5,7 +5,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Marker } from '@/clientservershare/types/marker.types';
+import { Marker } from '@/shared/types/marker.types';
 import { getMarkersAction } from '@/server/src/features/markers/actions/marker-actions';
 
 export function useMarkers() {
@@ -18,20 +18,22 @@ export function useMarkers() {
     setError(null);
     
     try {
+      console.log('🔄 [useMarkers] 开始获取标记...');
       const result = await getMarkersAction();
+      console.log('📊 [useMarkers] 获取结果:', result);
       
       if (result.success && result.data) {
-        // 转换图片字段
-        const markersWithImages = result.data.map(marker => ({
-          ...marker,
-          images: marker.images ? JSON.parse(marker.images as any) : [],
-        }));
-        setMarkers(markersWithImages as any);
+        // Repository 已经处理了 images 字段的转换，直接使用
+        // 不需要再次 JSON.parse
+        setMarkers(result.data as any);
+        console.log('✅ [useMarkers] 标记已加载，数量:', result.data.length);
       } else {
         setError(result.error || 'Failed to load markers');
+        console.error('❌ [useMarkers] 加载失败:', result.error);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unknown error');
+      console.error('❌ [useMarkers] 异常:', err);
     } finally {
       setIsLoading(false);
     }
